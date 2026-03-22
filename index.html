@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AfrikaansLab"/>
+<meta name="theme-color" content="#0f0f0f"/>
+<title>AfrikaansLab 🇿🇦</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:#0f0f0f;color:#f0ede6;font-family:'DM Sans',sans-serif;height:100%;display:flex;flex-direction:column;}
+#app{flex:1;overflow:hidden;display:flex;flex-direction:column;height:100%;}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* TOPBAR */
+.topbar{padding:12px 20px;padding-top:calc(env(safe-area-inset-top,0px) + 12px);background:#0f0f0f;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#c8a86b,#e8c987);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.logo-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;background:#0f0f0f;border-top:1px solid #1e1e1e;padding-bottom:env(safe-area-inset-bottom,0px);flex-shrink:0;}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 8px;gap:3px;cursor:pointer;border:none;background:transparent;color:#555;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.03em;transition:color .2s;}
+.bnav-btn .icon{font-size:21px;line-height:1;}
+.bnav-btn.active{color:#c8a86b;}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+::-webkit-scrollbar{display:none;}
+
+/* BUTTONS */
+.btn-gold{background:linear-gradient(135deg,#c8a86b,#e8c987);color:#0f0f0f;font-weight:600;padding:14px 20px;font-size:15px;border:none;border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .15s;}
+.btn-gold:active{transform:scale(.97);}
+.btn-outline{background:transparent;border:1px solid #333;color:#aaa;padding:13px 20px;font-size:15px;border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .15s;}
+.btn-outline:active{border-color:#c8a86b;color:#c8a86b;}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:9px;width:auto;}
+
+/* HOME */
+.home-hero{padding:24px 20px 0;}
+.badge{display:inline-block;background:rgba(200,168,107,.1);border:1px solid rgba(200,168,107,.2);border-radius:20px;padding:5px 12px;font-size:12px;color:#c8a86b;margin-bottom:14px;}
+.home-title{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;line-height:1.1;margin-bottom:10px;}
+.home-sub{font-size:14px;color:#777;line-height:1.6;margin-bottom:22px;}
+.progress-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:16px 20px;margin:0 20px 20px;display:flex;align-items:center;gap:16px;}
+.progress-bar-wrap{flex:1;height:7px;background:#0f0f0f;border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#c8a86b,#e8c987);border-radius:4px;transition:width .6s;}
+.progress-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c8a86b;text-align:right;}
+.progress-lbl{font-size:11px;color:#555;text-align:right;}
+.lesson-cards{padding:0 20px 20px;display:flex;flex-direction:column;gap:10px;}
+.lesson-card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:18px 20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px;}
+.lesson-card:active{transform:scale(.98);border-color:#c8a86b;}
+.lesson-card.locked{opacity:.4;cursor:not-allowed;}
+.lesson-card-icon{font-size:32px;flex-shrink:0;}
+.lesson-card-week{font-size:11px;color:#555;letter-spacing:.06em;margin-bottom:2px;}
+.lesson-card-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:2px;}
+.lesson-card-sub{font-size:12px;color:#666;}
+.lesson-card-badge{font-size:11px;color:#c8a86b;background:rgba(200,168,107,.1);border:1px solid rgba(200,168,107,.25);border-radius:20px;padding:3px 9px;flex-shrink:0;white-space:nowrap;}
+.home-btns{padding:0 20px 28px;display:flex;flex-direction:column;gap:10px;}
+.install-banner{background:rgba(200,168,107,.07);border:1px solid rgba(200,168,107,.2);border-radius:12px;padding:12px 16px;margin:0 20px 16px;font-size:12px;color:#888;line-height:1.6;display:none;}
+.install-banner strong{color:#c8a86b;display:block;margin-bottom:2px;}
+
+/* LESSONS */
+.lesson-header{padding:20px 20px 0;}
+.lesson-week-lbl{font-size:11px;color:#555;letter-spacing:.08em;margin-bottom:4px;}
+.lesson-title-big{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;margin-bottom:2px;}
+.lesson-subtitle{font-size:13px;color:#777;margin-bottom:18px;}
+.tab-bar{display:flex;gap:5px;padding:0 20px;margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;cursor:pointer;padding:8px 12px;border-radius:10px;font-size:12px;color:#666;border:none;background:#1a1a1a;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.tab.active{background:#c8a86b;color:#0f0f0f;font-weight:600;}
+.tab-content{padding:0 20px 20px;}
+.lesson-actions{padding:4px 20px 24px;display:flex;flex-direction:column;gap:10px;}
+
+/* VOCAB with AUDIO */
+.vocab-row{display:flex;align-items:center;border-bottom:1px solid #1a1a1a;padding:12px 0;gap:10px;}
+.vocab-af{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#c8a86b;flex:1;}
+.vocab-right{flex:1;}
+.vocab-it{font-size:14px;color:#e8e2d9;margin-bottom:1px;}
+.vocab-pron{font-size:11px;color:#555;font-style:italic;}
+.audio-btn{width:34px;height:34px;border-radius:50%;background:rgba(200,168,107,.12);border:1px solid rgba(200,168,107,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:15px;}
+.audio-btn:active{background:rgba(200,168,107,.3);transform:scale(.9);}
+.audio-btn.playing{background:#c8a86b;border-color:#c8a86b;}
+
+/* PHRASE */
+.phrase-card{background:#1a1a1a;border:1px solid #222;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;}
+.phrase-text{flex:1;}
+.phrase-af{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#c8a86b;margin-bottom:3px;}
+.phrase-it{font-size:13px;color:#e8e2d9;margin-bottom:2px;}
+.phrase-pron{font-size:11px;color:#555;font-style:italic;}
+
+/* GRAMMAR */
+.grammar-box{background:#1a1a1a;border:1px solid rgba(200,168,107,.2);border-radius:14px;padding:20px;}
+.grammar-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#c8a86b;margin-bottom:16px;}
+.grammar-point{display:flex;gap:12px;margin-bottom:14px;}
+.grammar-num{width:24px;height:24px;border-radius:50%;background:rgba(200,168,107,.13);border:1px solid rgba(200,168,107,.3);display:flex;align-items:center;justify-content:center;font-size:11px;color:#c8a86b;flex-shrink:0;font-weight:600;}
+.grammar-text{font-size:13px;color:#bbb;line-height:1.7;padding-top:2px;}
+
+/* PRONUNCIATION GUIDE (Lezione 0) */
+.pron-section{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:18px;margin-bottom:14px;}
+.pron-section-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#c8a86b;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.pron-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;}
+.pron-row:last-child{border-bottom:none;}
+.pron-letter{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#c8a86b;width:40px;}
+.pron-desc{flex:1;font-size:13px;color:#bbb;line-height:1.5;}
+.pron-example{font-size:12px;color:#555;font-style:italic;margin-top:2px;}
+
+/* MATCHING EXERCISE */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.match-btn{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:12px;padding:14px 10px;cursor:pointer;font-size:14px;color:#e8e2d9;font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center;line-height:1.3;}
+.match-btn:active{transform:scale(.97);}
+.match-btn.selected{border-color:#c8a86b;background:rgba(200,168,107,.1);color:#c8a86b;}
+.match-btn.correct{border-color:#4caf50!important;background:#1a2e1a!important;color:#4caf50!important;}
+.match-btn.wrong{border-color:#f44336!important;background:#2e1a1a!important;}
+.match-btn.disabled{opacity:.4;cursor:not-allowed;}
+
+/* FILL BLANK */
+.fill-question{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:8px;line-height:1.4;color:#f0ede6;}
+.fill-hint{font-size:13px;color:#555;margin-bottom:20px;}
+.fill-input{width:100%;background:#1a1a1a;border:2px solid #2a2a2a;border-radius:12px;padding:14px 16px;color:#f0ede6;font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s;margin-bottom:12px;}
+.fill-input:focus{border-color:#c8a86b;}
+.fill-input.correct{border-color:#4caf50!important;background:#1a2e1a!important;}
+.fill-input.wrong{border-color:#f44336!important;background:#2e1a1a!important;}
+.fill-feedback{font-size:14px;padding:10px 14px;border-radius:10px;margin-bottom:16px;display:none;}
+.fill-feedback.show{display:block;}
+.fill-feedback.ok{background:#1a2e1a;color:#4caf50;border:1px solid #4caf50;}
+.fill-feedback.no{background:#2e1a1a;color:#f44336;border:1px solid #f44336;}
+.exercise-progress{font-size:12px;color:#555;text-align:center;margin-bottom:20px;}
+.exercise-score{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:10px 16px;font-size:13px;color:#888;text-align:center;margin-bottom:16px;}
+
+/* QUIZ */
+.quiz-wrap{flex:1;display:flex;flex-direction:column;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.quiz-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.quiz-label{font-size:13px;color:#555;}
+.quiz-count{font-size:13px;color:#c8a86b;font-weight:600;}
+.quiz-progress{height:4px;background:#1a1a1a;border-radius:2px;margin-bottom:28px;overflow:hidden;}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,#c8a86b,#e8c987);transition:width .4s;}
+.quiz-question{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:26px;line-height:1.3;}
+.quiz-opt{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:12px;padding:14px 16px;cursor:pointer;font-size:15px;color:#e8e2d9;text-align:left;width:100%;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:all .15s;}
+.quiz-opt:active{transform:scale(.98);}
+.quiz-opt.correct{border-color:#4caf50!important;background:#1a2e1a!important;}
+.quiz-opt.wrong{border-color:#f44336!important;background:#2e1a1a!important;}
+.quiz-score-lbl{margin-top:12px;font-size:13px;color:#444;text-align:center;}
+.quiz-result{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;}
+.quiz-result-emoji{font-size:68px;margin-bottom:18px;}
+.quiz-result-score{font-family:'Playfair Display',serif;font-size:50px;font-weight:900;margin-bottom:10px;}
+.quiz-result-msg{color:#777;font-size:15px;margin-bottom:32px;}
+.quiz-result-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
+
+/* CHAT */
+.chat-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 6px;display:flex;flex-direction:column;gap:12px;}
+.bubble-user{background:linear-gradient(135deg,#c8a86b,#e8c987);color:#0f0f0f;border-radius:18px 18px 4px 18px;padding:11px 15px;max-width:78%;align-self:flex-end;font-size:14px;line-height:1.5;}
+.bubble-ai{background:#1e1e1e;border:1px solid #2a2a2a;color:#e8e2d9;border-radius:18px 18px 18px 4px;padding:11px 15px;max-width:84%;align-self:flex-start;font-size:14px;line-height:1.6;white-space:pre-wrap;}
+.chat-bar{border-top:1px solid #1e1e1e;padding:10px 12px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;gap:10px;background:#0f0f0f;flex-shrink:0;}
+.chat-input-wrap{flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:22px;display:flex;align-items:center;padding:2px 2px 2px 14px;}
+.chat-input{flex:1;background:transparent;border:none;color:#f0ede6;font-family:'DM Sans',sans-serif;font-size:15px;padding:8px 0;outline:none;}
+.chat-send{background:linear-gradient(135deg,#c8a86b,#e8c987);border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:15px;color:#0f0f0f;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.apikey-banner{background:#1a1a1a;border:1px solid rgba(200,168,107,.25);border-radius:12px;padding:14px 16px;margin:12px 16px 0;font-size:13px;color:#888;line-height:1.5;}
+.apikey-banner a{color:#c8a86b;text-decoration:none;}
+.apikey-input-row{display:flex;gap:8px;margin-top:10px;}
+.apikey-input{flex:1;background:#0f0f0f;border:1px solid #333;border-radius:8px;padding:8px 12px;color:#f0ede6;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+.apikey-save{background:linear-gradient(135deg,#c8a86b,#e8c987);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:#0f0f0f;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.dot{width:7px;height:7px;border-radius:50%;background:#c8a86b;display:inline-block;animation:bounce 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.audio-btn.playing{animation:pulse .6s infinite;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ HOME ══ -->
+<div id="screen-home" class="screen active">
+  <div class="topbar">
+    <div class="logo"><div class="logo-icon">🇿🇦</div><div class="logo-title">AfrikaansLab</div></div>
+    <div style="font-size:12px;color:#555;">4 lezioni</div>
+  </div>
+  <div class="scroll-area">
+    <div class="home-hero">
+      <div class="badge">Principiante · 10–15 min/giorno</div>
+      <h1 class="home-title">Impara<br><span style="color:#c8a86b;">l'Afrikaans</span></h1>
+      <p class="home-sub">Dalla pronuncia alla conversazione — con audio, esercizi interattivi e tutor AI.</p>
+    </div>
+    <div id="install-banner" class="install-banner">
+      <strong>📱 Aggiungi alla schermata Home</strong>
+      iPhone: Condividi → "Aggiungi a schermata Home" · Android: ⋮ → "Aggiungi a schermata Home"
+    </div>
+    <div class="progress-box">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:#555;letter-spacing:.05em;margin-bottom:8px;">PROGRESSO</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="home-progress-bar" style="width:0%"></div></div>
+      </div>
+      <div><div class="progress-num" id="home-progress-pct">0%</div><div class="progress-lbl" id="home-progress-count">0/4 lezioni</div></div>
+    </div>
+    <div class="lesson-cards" id="lesson-cards"></div>
+    <div class="home-btns">
+      <button class="btn-gold" onclick="goTo('chat')">💬 Parla con il Tutor AI</button>
+      <button class="btn-outline" onclick="openLesson(0)">🔤 Inizia dalla Pronuncia</button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="bnav-btn active" onclick="goTo('home')"><span class="icon">🏠</span>Home</button>
+    <button class="bnav-btn" onclick="goTo('lessons')"><span class="icon">📚</span>Lezioni</button>
+    <button class="bnav-btn" onclick="goTo('chat')"><span class="icon">💬</span>Tutor AI</button>
+  </div>
+</div>
+
+<!-- ══ LESSONS ══ -->
+<div id="screen-lessons" class="screen">
+  <div class="topbar">
+    <div class="logo"><div class="logo-icon">🇿🇦</div><div class="logo-title">AfrikaansLab</div></div>
+    <div style="display:flex;gap:6px;" id="lesson-selector"></div>
+  </div>
+  <div class="scroll-area"><div id="lesson-full-content"></div></div>
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo('home')"><span class="icon">🏠</span>Home</button>
+    <button class="bnav-btn active" onclick="goTo('lessons')"><span class="icon">📚</span>Lezioni</button>
+    <button class="bnav-btn" onclick="goTo('chat')"><span class="icon">💬</span>Tutor AI</button>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div id="screen-quiz" class="screen">
+  <div class="topbar">
+    <button onclick="goTo('lessons')" style="background:transparent;border:none;color:#888;font-size:24px;cursor:pointer;padding:0 8px 0 0;">‹</button>
+    <div class="logo-title" id="quiz-title">Quiz</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="quiz-wrap" id="quiz-wrap"></div>
+</div>
+
+<!-- ══ EXERCISE ══ -->
+<div id="screen-exercise" class="screen">
+  <div class="topbar">
+    <button onclick="goTo('lessons')" style="background:transparent;border:none;color:#888;font-size:24px;cursor:pointer;padding:0 8px 0 0;">‹</button>
+    <div class="logo-title" id="exercise-title">Esercizio</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="quiz-wrap" id="exercise-wrap"></div>
+</div>
+
+<!-- ══ CHAT ══ -->
+<div id="screen-chat" class="screen">
+  <div class="topbar">
+    <div class="logo"><div class="logo-icon">🇿🇦</div>
+      <div><div class="logo-title">Tutor AI</div><div style="font-size:10px;color:#555;">Scrivi in italiano o in Afrikaans</div></div>
+    </div>
+    <div id="api-status" style="width:8px;height:8px;border-radius:50%;background:#555;"></div>
+  </div>
+  <div id="apikey-banner" class="apikey-banner">
+    🔑 Per il Tutor AI inserisci la tua chiave API Anthropic.<br>
+    Ottienila gratis su <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+    <div class="apikey-input-row">
+      <input class="apikey-input" id="apikey-input" type="password" placeholder="sk-ant-..."/>
+      <button class="apikey-save" onclick="saveApiKey()">Salva</button>
+    </div>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="bubble-ai">Hallo! 🇿🇦 Sono il tuo tutor di Afrikaans. Scrivi in italiano o prova in Afrikaans — ti rispondo e ti correggo!</div>
+  </div>
+  <div class="chat-bar">
+    <div class="chat-input-wrap">
+      <input class="chat-input" id="chat-input" placeholder="Scrivi un messaggio..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    </div>
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo('home')"><span class="icon">🏠</span>Home</button>
+    <button class="bnav-btn" onclick="goTo('lessons')"><span class="icon">📚</span>Lezioni</button>
+    <button class="bnav-btn active" onclick="goTo('chat')"><span class="icon">💬</span>Tutor AI</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+const PRONUNCIATION_GUIDE = {
+  id:0, week:0, title:"Guida alla Pronuncia", subtitle:"Uitspraakverhaal", icon:"🔤",
+  intro:"L'Afrikaans ha una pronuncia molto regolare — poche eccezioni, tante regole fisse. Ascolta ogni suono e ripeti!",
+  sections:[
+    {
+      title:"Vocali",
+      rows:[
+        {letter:"a",desc:"Come la 'a' italiana",example:"dag (giorno) → 'dah'",speak:"dag"},
+        {letter:"e",desc:"Come la 'e' italiana aperta",example:"ses (sei) → 'ses'",speak:"ses"},
+        {letter:"i",desc:"Come la 'i' italiana",example:"dit (questo) → 'dit'",speak:"dit"},
+        {letter:"o",desc:"Come la 'o' italiana",example:"oor (orecchio) → 'oor'",speak:"oor"},
+        {letter:"u",desc:"Come la 'u' francese (arrotondata)",example:"uur (ora) → 'üür'",speak:"uur"},
+        {letter:"ie",desc:"Come la 'ie' lunga — 'ee'",example:"lief (caro) → 'leef'",speak:"lief"},
+        {letter:"oe",desc:"Come la 'u' italiana lunga",example:"goed (buono) → 'hoot'",speak:"goed"},
+        {letter:"ui",desc:"Suono unico — bocca arrotondata, dì 'ei'",example:"huis (casa) → 'hajs'",speak:"huis"},
+      ]
+    },
+    {
+      title:"Consonanti speciali",
+      rows:[
+        {letter:"g / gh",desc:"Suono gutturale, come la 'ch' tedesca o spagnola",example:"goed → 'hoot'",speak:"goed"},
+        {letter:"j",desc:"Si pronuncia come 'y' in inglese",example:"ja (sì) → 'ya'",speak:"ja"},
+        {letter:"r",desc:"Leggermente arrotata, come in olandese",example:"reis → 'rays'",speak:"reis"},
+        {letter:"v",desc:"Si pronuncia come 'f'",example:"vier (quattro) → 'feer'",speak:"vier"},
+        {letter:"w",desc:"Si pronuncia come 'v'",example:"water → 'vater'",speak:"water"},
+        {letter:"sj",desc:"Come 'sc' in 'scena' italiano",example:"sjampanje → 'scampanje'",speak:"sjampanje"},
+        {letter:"tj",desc:"Come 'c' in 'ciao' italiano",example:"tjek → 'chek'",speak:"tjek"},
+        {letter:"nj",desc:"Come 'gn' in 'gnocchi'",example:"njala → 'nyala'",speak:"njala"},
+      ]
+    },
+    {
+      title:"Regole utili",
+      rows:[
+        {letter:"aa/ee/oo",desc:"Vocali doppie = suono allungato",example:"baas (capo) → 'baas' lungo",speak:"baas"},
+        {letter:"-ig",desc:"Il finale '-ig' si pronuncia '-uh'",example:"edig → 'e-duh'",speak:"edig"},
+        {letter:"-e finale",desc:"La 'e' finale è quasi muta, come in francese",example:"danke → 'dan-kuh'",speak:"dankie"},
+        {letter:"nie...nie",desc:"Doppia negazione — caratteristica unica!",example:"Ek weet nie → Non lo so",speak:"ek weet nie"},
+      ]
+    }
+  ],
+  // No vocab/phrases for lesson 0, we use sections above
+};
+
+const LESSONS = [
+  PRONUNCIATION_GUIDE,
+  {id:1,week:1,title:"Saluti e Presentazioni",subtitle:"Groete en Voorstellings",icon:"👋",
+    vocabulary:[
+      {af:"Hallo",it:"Ciao",p:"Ha-lo"},{af:"Goeiemore",it:"Buongiorno",p:"Hoo-ya-mo-ra"},
+      {af:"Goeiedag",it:"Buon pomeriggio",p:"Hoo-ya-dah"},{af:"Goeienag",it:"Buonanotte",p:"Hoo-ya-nah"},
+      {af:"Totsiens",it:"Arrivederci",p:"Tot-seens"},{af:"Asseblief",it:"Per favore",p:"As-se-bleef"},
+      {af:"Dankie",it:"Grazie",p:"Dan-kee"},{af:"Ja",it:"Sì",p:"Ya"},{af:"Nee",it:"No",p:"Nee-a"},
+    ],
+    phrases:[
+      {af:"Hoe gaan dit?",it:"Come stai?",p:"Hoo haan dit?"},
+      {af:"Dit gaan goed, dankie.",it:"Sto bene, grazie.",p:"Dit haan hoot, dan-kee."},
+      {af:"Wat is jou naam?",it:"Come ti chiami?",p:"Vat is yoo naam?"},
+      {af:"My naam is...",it:"Mi chiamo...",p:"May naam is..."},
+      {af:"Aangenaam kennis te maak.",it:"Piacere di conoscerti.",p:"Aan-ye-naam ken-nis te maak."},
+    ],
+    grammar:{title:"Le basi",points:[
+      "In Afrikaans non ci sono generi grammaticali (niente maschile/femminile)",
+      "I verbi non si coniugano in base alla persona: 'ek is', 'jy is', 'hy is'",
+      "L'ordine delle parole è Soggetto + Verbo + Oggetto, come in italiano",
+      "'Ek'=Io · 'Jy/U'=Tu/Lei · 'Hy/Sy'=Lui/Lei · 'Ons'=Noi · 'Julle'=Voi · 'Hulle'=Loro",
+    ]},
+    fillBlanks:[
+      {sentence:"___ gaan dit?",answer:"Hoe",hint:"Come stai? (prima parola)"},
+      {sentence:"My naam ___...",answer:"is",hint:"Mi chiamo... (verbo essere)"},
+      {sentence:"Dit gaan ___, dankie.",answer:"goed",hint:"Sto bene... (bene)"},
+      {sentence:"___ kennis te maak.",answer:"Aangenaam",hint:"Piacere di conoscerti (prima parola)"},
+      {sentence:"___ is jou naam?",answer:"Wat",hint:"Come ti chiami? (prima parola)"},
+    ]
+  },
+  {id:2,week:2,title:"Numeri e Tempo",subtitle:"Getalle en Tyd",icon:"🔢",
+    vocabulary:[
+      {af:"Een",it:"Uno",p:"Ee-an"},{af:"Twee",it:"Due",p:"Tvee"},{af:"Drie",it:"Tre",p:"Dree"},
+      {af:"Vier",it:"Quattro",p:"Feer"},{af:"Vyf",it:"Cinque",p:"Fayf"},{af:"Ses",it:"Sei",p:"Ses"},
+      {af:"Sewe",it:"Sette",p:"Se-ve"},{af:"Agt",it:"Otto",p:"Aht"},{af:"Nege",it:"Nove",p:"Ne-he"},
+      {af:"Tien",it:"Dieci",p:"Teen"},
+    ],
+    phrases:[
+      {af:"Hoe laat is dit?",it:"Che ore sono?",p:"Hoo laat is dit?"},
+      {af:"Dit is twee-uur.",it:"Sono le due.",p:"Dit is tvee-oor."},
+      {af:"Vandag",it:"Oggi",p:"Fa-naah"},{af:"More",it:"Domani",p:"Mo-re"},{af:"Gister",it:"Ieri",p:"His-ter"},
+    ],
+    grammar:{title:"La Negazione",points:[
+      "La negazione usa 'nie' due volte nella frase",
+      "Esempio: 'Ek praat nie Afrikaans nie' = Non parlo Afrikaans",
+      "La prima 'nie' va dopo il verbo, la seconda alla fine",
+      "Frase semplice: 'Dit is nie reg nie' = Non è giusto",
+    ]},
+    fillBlanks:[
+      {sentence:"___ is dit?",answer:"Hoe laat",hint:"Che ore sono? (prime due parole)"},
+      {sentence:"Dit is ___-uur.",answer:"twee",hint:"Sono le due"},
+      {sentence:"Ek praat nie Afrikaans ___.",answer:"nie",hint:"Negazione doppia — ultima parola"},
+      {sentence:"___ (domani in afrikaans)",answer:"More",hint:"Domani"},
+      {sentence:"___ (ieri in afrikaans)",answer:"Gister",hint:"Ieri"},
+    ]
+  },
+  {id:3,week:3,title:"Conversazione Quotidiana",subtitle:"Daaglikse Gesprekke",icon:"💬",
+    vocabulary:[
+      {af:"Water",it:"Acqua",p:"Va-ter"},{af:"Kos",it:"Cibo",p:"Kos"},{af:"Huis",it:"Casa",p:"Hajs"},
+      {af:"Werk",it:"Lavoro",p:"Verk"},{af:"Winkel",it:"Negozio",p:"Vin-kel"},{af:"Pad",it:"Strada",p:"Pat"},
+      {af:"Trein",it:"Treno",p:"Trayn"},{af:"Motor",it:"Auto",p:"Mo-tor"},{af:"Geld",it:"Soldi",p:"Helt"},
+      {af:"Tyd",it:"Tempo",p:"Tayt"},
+    ],
+    phrases:[
+      {af:"Waar is die badkamer?",it:"Dov'è il bagno?",p:"Vaar is dee bat-kaa-mer?"},
+      {af:"Ek verstaan nie.",it:"Non capisco.",p:"Ek fer-staan nee."},
+      {af:"Praat jy Afrikaans?",it:"Parli Afrikaans?",p:"Praat yay Afrikaans?"},
+      {af:"Kan jy stadig praat?",it:"Puoi parlare lentamente?",p:"Kan yay staa-dih praat?"},
+      {af:"Help my, asseblief.",it:"Aiutami, per favore.",p:"Help may, as-se-bleef."},
+    ],
+    grammar:{title:"Il Plurale",points:[
+      "Il plurale si forma aggiungendo '-e' o '-s' alla fine",
+      "Esempio: 'hond' (cane) → 'honde' (cani)",
+      "Esempio: 'motor' (auto) → 'motors' (auto, pl.)",
+      "Parole che finiscono in vocale prendono spesso '-s': 'seun' → 'seuns'",
+    ]},
+    fillBlanks:[
+      {sentence:"Waar is die ___?",answer:"badkamer",hint:"Dov'è il bagno?"},
+      {sentence:"Ek ___ nie.",answer:"verstaan",hint:"Non capisco (verbo)"},
+      {sentence:"Help ___, asseblief.",answer:"my",hint:"Aiutami (pronome)"},
+      {sentence:"Kan jy ___ praat?",answer:"stadig",hint:"Puoi parlare lentamente? (avverbio)"},
+      {sentence:"___ jy Afrikaans?",answer:"Praat",hint:"Parli Afrikaans? (verbo)"},
+    ]
+  }
+];
+
+const QUIZ_POOL = {
+  0:[
+    {q:"Come si pronuncia la 'g' in Afrikaans?",a:"Gutturale, come 'ch' tedesco",opts:["Come in italiano","Gutturale, come 'ch' tedesco","Muta, non si pronuncia","Come 'j' in inglese"]},
+    {q:"Come si legge la lettera 'j' in Afrikaans?",a:"Come 'y' in inglese",opts:["Come 'j' in italiano","Come 'y' in inglese","Come 'sc' in scena","Come 'dj' in jazz"]},
+    {q:"Come si pronuncia 'w' in Afrikaans?",a:"Come una 'v'",opts:["Come 'w' in inglese","Come una 'v'","Come una 'u'","Come 'f'"]},
+    {q:"La doppia vocale 'aa' produce...",a:"Un suono allungato",opts:["Un suono corto","Un suono allungato","Un dittongo","Si pronuncia separata"]},
+    {q:"Come si pronuncia 'v' in Afrikaans?",a:"Come una 'f'",opts:["Come 'v' italiana","Come una 'f'","Come 'b'","Come 'w'"]},
+  ],
+  1:[
+    {q:"Come si dice 'Ciao' in Afrikaans?",a:"Hallo",opts:["Hallo","Dankie","Totsiens","Ja"]},
+    {q:"Cosa significa 'Dankie'?",a:"Grazie",opts:["Ciao","Grazie","Per favore","Sì"]},
+    {q:"Come si dice 'Come ti chiami?'",a:"Wat is jou naam?",opts:["Hoe gaan dit?","Wat is jou naam?","My naam is...","Totsiens"]},
+    {q:"Cosa significa 'Totsiens'?",a:"Arrivederci",opts:["Buongiorno","Arrivederci","Buonanotte","Grazie"]},
+    {q:"Come si dice 'Buongiorno'?",a:"Goeiemore",opts:["Goeienag","Goeiedag","Goeiemore","Hallo"]},
+  ],
+  2:[
+    {q:"Come si dice '5' in Afrikaans?",a:"Vyf",opts:["Vier","Vyf","Ses","Sewe"]},
+    {q:"Cosa significa 'Tien'?",a:"Dieci",opts:["Tre","Sette","Dieci","Otto"]},
+    {q:"Come si dice 'Domani'?",a:"More",opts:["Gister","Vandag","More","Tyd"]},
+    {q:"Cosa significa 'Gister'?",a:"Ieri",opts:["Oggi","Domani","Ieri","Ora"]},
+    {q:"Come si dice '3' in Afrikaans?",a:"Drie",opts:["Twee","Drie","Vier","Een"]},
+  ],
+  3:[
+    {q:"Come si dice 'Non capisco'?",a:"Ek verstaan nie.",opts:["Ek praat nie.","Ek verstaan nie.","Help my.","Waar is dit?"]},
+    {q:"Cosa significa 'Werk'?",a:"Lavoro",opts:["Casa","Lavoro","Negozio","Strada"]},
+    {q:"Come si dice 'Acqua'?",a:"Water",opts:["Kos","Geld","Water","Tyd"]},
+    {q:"Come si chiede 'Dov'è il bagno?'",a:"Waar is die badkamer?",opts:["Help my, asseblief.","Kan jy stadig praat?","Waar is die badkamer?","Praat jy Afrikaans?"]},
+    {q:"Cosa significa 'Huis'?",a:"Casa",opts:["Negozio","Auto","Casa","Treno"]},
+  ]
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let completedLessons = JSON.parse(localStorage.getItem('af_completed')||'[]');
+let currentLesson = 0, currentTab = 'content';
+let quizLesson=0,quizIndex=0,quizScore=0,quizSelected=null;
+let exLesson=0,exType='match',exIndex=0,exScore=0,exSelected=null,exMatched=[];
+let chatHistory=[],chatLoading=false;
+let apiKey=localStorage.getItem('af_apikey')||'';
+let currentSpeech=null;
+
+// ═══════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════
+function speak(text, btnEl) {
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'af-ZA';
+  u.rate = 0.85;
+  u.pitch = 1;
+  // fallback to nl-NL if af-ZA not available
+  const voices = window.speechSynthesis.getVoices();
+  const afVoice = voices.find(v=>v.lang.startsWith('af')) || voices.find(v=>v.lang.startsWith('nl'));
+  if(afVoice) u.voice = afVoice;
+  if(btnEl) {
+    btnEl.classList.add('playing');
+    u.onend = ()=>btnEl.classList.remove('playing');
+    u.onerror = ()=>btnEl.classList.remove('playing');
+  }
+  window.speechSynthesis.speak(u);
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  if(screen==='home') renderHome();
+  if(screen==='lessons') renderLessons();
+  if(screen==='chat') renderChat();
+}
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+function renderHome() {
+  const total = LESSONS.length;
+  const pct = Math.round((completedLessons.length/total)*100);
+  document.getElementById('home-progress-bar').style.width=pct+'%';
+  document.getElementById('home-progress-pct').textContent=pct+'%';
+  document.getElementById('home-progress-count').textContent=completedLessons.length+'/'+total+' lezioni';
+  if(/iPhone|iPad|Android/i.test(navigator.userAgent)&&!window.navigator.standalone)
+    document.getElementById('install-banner').style.display='block';
+
+  const container=document.getElementById('lesson-cards');
+  container.innerHTML='';
+  LESSONS.forEach((l,i)=>{
+    const done=completedLessons.includes(l.id);
+    const locked=i>0&&!completedLessons.includes(LESSONS[i-1].id);
+    const div=document.createElement('div');
+    div.className='lesson-card'+(locked?' locked':'');
+    div.innerHTML=`
+      <div class="lesson-card-icon">${l.icon}</div>
+      <div style="flex:1;">
+        <div class="lesson-card-week">${l.week===0?'INTRODUZIONE':'SETTIMANA '+l.week}</div>
+        <div class="lesson-card-title">${l.title}</div>
+        <div class="lesson-card-sub">${l.week===0?'Fonetica · Suoni · Regole':(l.vocabulary.length+' parole · '+l.phrases.length+' frasi')}</div>
+      </div>
+      ${done?'<div class="lesson-card-badge">✓ Fatto</div>':locked?'<div style="font-size:18px;color:#444;">🔒</div>':'<div style="font-size:20px;color:#c8a86b;">›</div>'}`;
+    if(!locked) div.onclick=()=>openLesson(i);
+    container.appendChild(div);
+  });
+}
+
+function openLesson(i) {
+  if(i>0&&!completedLessons.includes(LESSONS[i-1].id))return;
+  currentLesson=i; currentTab=i===0?'content':'vocab';
+  goTo('lessons');
+}
+
+// ═══════════════════════════════════════
+// LESSONS
+// ═══════════════════════════════════════
+function renderLessons() {
+  const sel=document.getElementById('lesson-selector');
+  sel.innerHTML='';
+  LESSONS.forEach((l,i)=>{
+    const locked=i>0&&!completedLessons.includes(LESSONS[i-1].id);
+    const btn=document.createElement('button');
+    btn.textContent=l.icon;
+    btn.style.cssText=`background:${i===currentLesson?'#c8a86b':'#1a1a1a'};border:none;border-radius:8px;padding:5px 9px;font-size:17px;cursor:${locked?'not-allowed':'pointer'};opacity:${locked?.4:1};`;
+    if(!locked) btn.onclick=()=>{currentLesson=i;currentTab=i===0?'content':'vocab';renderLessons();};
+    sel.appendChild(btn);
+  });
+  renderLessonContent();
+}
+
+function renderLessonContent() {
+  const lesson=LESSONS[currentLesson];
+  const el=document.getElementById('lesson-full-content');
+  const isPron=lesson.id===0;
+
+  const tabs = isPron
+    ? [['content','🔤 Guida'],['quiz-tab','✅ Quiz']]
+    : [['vocab','📖 Vocaboli'],['phrases','💬 Frasi'],['grammar','📝 Gram.'],['match','🔗 Abbina'],['fill','✏️ Completa'],['quiz-tab','🧠 Quiz']];
+
+  el.innerHTML=`
+    <div class="lesson-header">
+      <div class="lesson-week-lbl">${lesson.week===0?'INTRODUZIONE':'SETTIMANA '+lesson.week}</div>
+      <div class="lesson-title-big">${lesson.icon} ${lesson.title}</div>
+      <div class="lesson-subtitle">${lesson.subtitle}</div>
+    </div>
+    <div class="tab-bar">${tabs.map(([t,l])=>`<button class="tab ${currentTab===t?'active':''}" onclick="switchTab('${t}')">${l}</button>`).join('')}</div>
+    <div class="tab-content" id="tab-content"></div>`;
+  renderTabContent();
+}
+
+function switchTab(tab) {
+  if(tab==='quiz-tab'){startQuiz(currentLesson);return;}
+  if(tab==='match'){startExercise(currentLesson,'match');return;}
+  if(tab==='fill'){startExercise(currentLesson,'fill');return;}
+  currentTab=tab; renderLessonContent();
+}
+
+function renderTabContent() {
+  const lesson=LESSONS[currentLesson];
+  const el=document.getElementById('tab-content');
+  if(lesson.id===0&&currentTab==='content') { renderPronContent(el); return; }
+
+  if(currentTab==='vocab') {
+    el.innerHTML=lesson.vocabulary.map((v,i)=>`
+      <div class="vocab-row">
+        <div class="vocab-af">${v.af}</div>
+        <div class="vocab-right"><div class="vocab-it">${v.it}</div><div class="vocab-pron">/${v.p}/</div></div>
+        <div class="audio-btn" id="abtn-${i}" onclick="speak('${v.af}',document.getElementById('abtn-${i}'))">🔊</div>
+      </div>`).join('');
+  } else if(currentTab==='phrases') {
+    el.innerHTML=lesson.phrases.map((p,i)=>`
+      <div class="phrase-card">
+        <div class="phrase-text">
+          <div class="phrase-af">${p.af}</div>
+          <div class="phrase-it">${p.it}</div>
+          <div class="phrase-pron">/${p.p}/</div>
+        </div>
+        <div class="audio-btn" id="pbtn-${i}" onclick="speak('${p.af.replace(/'/g,"\\'")}',document.getElementById('pbtn-${i}'))">🔊</div>
+      </div>`).join('');
+  } else if(currentTab==='grammar') {
+    el.innerHTML=`<div class="grammar-box">
+      <div class="grammar-title">📝 ${lesson.grammar.title}</div>
+      ${lesson.grammar.points.map((pt,i)=>`
+        <div class="grammar-point">
+          <div class="grammar-num">${i+1}</div>
+          <div class="grammar-text">${pt}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+}
+
+function renderPronContent(el) {
+  const g=PRONUNCIATION_GUIDE;
+  el.innerHTML=`<div style="background:rgba(200,168,107,.07);border:1px solid rgba(200,168,107,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#aaa;line-height:1.6;">${g.intro}</div>`
+  +g.sections.map(sec=>`
+    <div class="pron-section">
+      <div class="pron-section-title">🔤 ${sec.title}</div>
+      ${sec.rows.map((r,i)=>`
+        <div class="pron-row">
+          <div class="pron-letter">${r.letter}</div>
+          <div class="pron-desc">${r.desc}<div class="pron-example">${r.example}</div></div>
+          <div class="audio-btn" id="gbtn-${sec.title}-${i}" onclick="speak('${r.speak}',document.getElementById('gbtn-${sec.title}-${i}'))">🔊</div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════
+function startQuiz(lessonIndex) {
+  quizLesson=lessonIndex; quizIndex=0; quizScore=0; quizSelected=null;
+  document.getElementById('quiz-title').textContent='Quiz · '+LESSONS[lessonIndex].icon;
+  goTo('quiz'); renderQuiz();
+}
+
+function renderQuiz() {
+  const lesson=LESSONS[quizLesson];
+  const questions=QUIZ_POOL[lesson.id];
+  const el=document.getElementById('quiz-wrap');
+  if(quizIndex>=questions.length) {
+    if(!completedLessons.includes(lesson.id)){completedLessons.push(lesson.id);localStorage.setItem('af_completed',JSON.stringify(completedLessons));}
+    const emoji=quizScore>=4?'🏆':quizScore>=3?'👍':'💪';
+    const msg=quizScore>=4?'Ottimo! Lezione completata ✓':quizScore>=3?'Bene! Continua così 👏':'Riprova, puoi farcela! 💪';
+    el.innerHTML=`<div class="quiz-result">
+      <div class="quiz-result-emoji">${emoji}</div>
+      <div class="quiz-result-score">${quizScore}/${questions.length}</div>
+      <div class="quiz-result-msg">${msg}</div>
+      <div class="quiz-result-btns">
+        <button class="btn-gold" onclick="startQuiz(${quizLesson})">🔄 Riprova</button>
+        <button class="btn-outline" onclick="goTo('lessons')">← Torna alle lezioni</button>
+        <button class="btn-outline" onclick="goTo('home')">🏠 Home</button>
+      </div></div>`;
+    return;
+  }
+  const q=questions[quizIndex];
+  el.innerHTML=`
+    <div class="quiz-topbar"><div class="quiz-label">${lesson.icon} ${lesson.title}</div><div class="quiz-count">${quizIndex+1}/${questions.length}</div></div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" style="width:${(quizIndex/questions.length)*100}%"></div></div>
+    <div class="quiz-question">${q.q}</div>
+    <div id="quiz-opts"></div>
+    <div class="quiz-score-lbl">Punteggio: ${quizScore}/${quizIndex}</div>`;
+  q.opts.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-opt'; btn.textContent=opt;
+    btn.onclick=()=>answerQuiz(opt,q.a);
+    document.getElementById('quiz-opts').appendChild(btn);
+  });
+}
+
+function answerQuiz(selected,correct) {
+  if(quizSelected!==null)return;
+  quizSelected=selected;
+  document.querySelectorAll('.quiz-opt').forEach(btn=>{
+    if(btn.textContent===correct)btn.classList.add('correct');
+    else if(btn.textContent===selected)btn.classList.add('wrong');
+    btn.onclick=null;
+  });
+  if(selected===correct)quizScore++;
+  setTimeout(()=>{quizIndex++;quizSelected=null;renderQuiz();},1100);
+}
+
+// ═══════════════════════════════════════
+// EXERCISES
+// ═══════════════════════════════════════
+function startExercise(lessonIndex, type) {
+  exLesson=lessonIndex; exType=type; exIndex=0; exScore=0; exSelected=null; exMatched=[];
+  document.getElementById('exercise-title').textContent=(type==='match'?'Abbina':'Completa')+' · '+LESSONS[lessonIndex].icon;
+  goTo('exercise'); renderExercise();
+}
+
+function renderExercise() {
+  if(exType==='match') renderMatchExercise();
+  else renderFillExercise();
+}
+
+// ── MATCHING ──
+function renderMatchExercise() {
+  const lesson=LESSONS[exLesson];
+  const vocab=lesson.vocabulary||[];
+  const el=document.getElementById('exercise-wrap');
+  // pick 4 random pairs
+  const pool=[...vocab].sort(()=>Math.random()-.5).slice(0,4);
+  const afWords=pool.map(v=>v.af);
+  const itWords=[...pool.map(v=>v.it)].sort(()=>Math.random()-.5);
+  let selAf=null, matched=[], wrong=[];
+  let score=0, total=pool.length;
+
+  function render() {
+    el.innerHTML=`
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:6px;">Abbina le parole</div>
+      <div class="exercise-score">✓ ${score}/${total} abbinati</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;">
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;" id="af-col"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;" id="it-col"></div>
+      </div>`;
+    const afCol=document.getElementById('af-col');
+    const itCol=document.getElementById('it-col');
+
+    afWords.forEach(af=>{
+      const isMatched=matched.find(m=>m.af===af);
+      const btn=document.createElement('button');
+      btn.className='match-btn'+(selAf===af?' selected':'')+(isMatched?' correct disabled':'');
+      btn.textContent=af;
+      if(!isMatched) btn.onclick=()=>{selAf=af;render();};
+      afCol.appendChild(btn);
+    });
+
+    itWords.forEach(it=>{
+      const correctAf=pool.find(v=>v.it===it).af;
+      const isMatched=matched.find(m=>m.it===it);
+      const isWrong=wrong.includes(it);
+      const btn=document.createElement('button');
+      btn.className='match-btn'+(isMatched?' correct disabled':isWrong?' wrong':'');
+      btn.textContent=it;
+      if(!isMatched) btn.onclick=()=>{
+        if(!selAf)return;
+        if(correctAf===selAf){
+          matched.push({af:selAf,it});score++;selAf=null;
+          wrong=wrong.filter(w=>w!==it);
+          if(score===total){
+            setTimeout(()=>{
+              el.innerHTML=`<div class="quiz-result">
+                <div class="quiz-result-emoji">🎉</div>
+                <div class="quiz-result-score">${score}/${total}</div>
+                <div class="quiz-result-msg">Perfetto! Tutti abbinati correttamente!</div>
+                <div class="quiz-result-btns">
+                  <button class="btn-gold" onclick="renderMatchExercise()">🔄 Nuovo gioco</button>
+                  <button class="btn-outline" onclick="goTo('lessons')">← Lezioni</button>
+                </div></div>`;
+            },400);
+          }
+        } else {
+          if(!wrong.includes(it))wrong.push(it);
+          selAf=null;
+        }
+        render();
+      };
+      itCol.appendChild(btn);
+    });
+  }
+  render();
+}
+
+// ── FILL IN THE BLANK ──
+let fillAnswered=false;
+function renderFillExercise() {
+  const lesson=LESSONS[exLesson];
+  const blanks=lesson.fillBlanks||[];
+  const el=document.getElementById('exercise-wrap');
+  fillAnswered=false;
+
+  if(exIndex>=blanks.length) {
+    el.innerHTML=`<div class="quiz-result">
+      <div class="quiz-result-emoji">${exScore>=blanks.length?'🏆':exScore>=(blanks.length/2)?'👍':'💪'}</div>
+      <div class="quiz-result-score">${exScore}/${blanks.length}</div>
+      <div class="quiz-result-msg">${exScore>=blanks.length?'Perfetto!':exScore>=(blanks.length/2)?'Bene! Continua così':'Riprova!'}</div>
+      <div class="quiz-result-btns">
+        <button class="btn-gold" onclick="startExercise(${exLesson},'fill')">🔄 Riprova</button>
+        <button class="btn-outline" onclick="goTo('lessons')">← Lezioni</button>
+      </div></div>`;
+    return;
+  }
+
+  const b=blanks[exIndex];
+  el.innerHTML=`
+    <div class="quiz-topbar"><div class="quiz-label">${lesson.icon} Completa la frase</div><div class="quiz-count">${exIndex+1}/${blanks.length}</div></div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" style="width:${(exIndex/blanks.length)*100}%"></div></div>
+    <div class="fill-question">${b.sentence.replace('___','<span style="color:#c8a86b;border-bottom:2px solid #c8a86b;padding:0 8px;">___</span>')}</div>
+    <div class="fill-hint">💡 ${b.hint}</div>
+    <input class="fill-input" id="fill-input" placeholder="Scrivi qui..." autocomplete="off" autocorrect="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')checkFill()"/>
+    <div class="fill-feedback" id="fill-feedback"></div>
+    <button class="btn-gold" onclick="checkFill()">Controlla ✓</button>
+    <div style="margin-top:10px;"><button class="btn-outline" id="next-btn" onclick="nextFill()" style="display:none;">Avanti →</button></div>
+    <div class="quiz-score-lbl" style="margin-top:14px;">Punteggio: ${exScore}/${exIndex}</div>`;
+  setTimeout(()=>{const inp=document.getElementById('fill-input');if(inp)inp.focus();},100);
+}
+
+function checkFill() {
+  if(fillAnswered)return;
+  const lesson=LESSONS[exLesson];
+  const b=lesson.fillBlanks[exIndex];
+  const inp=document.getElementById('fill-input');
+  const fb=document.getElementById('fill-feedback');
+  const nextBtn=document.getElementById('next-btn');
+  if(!inp)return;
+  const val=inp.value.trim();
+  const correct=b.answer.toLowerCase();
+  const isOk=val.toLowerCase()===correct;
+  fillAnswered=true;
+  inp.classList.add(isOk?'correct':'wrong');
+  fb.className='fill-feedback show '+(isOk?'ok':'no');
+  fb.textContent=isOk?'✓ Corretto! Ottimo 🎉':'✗ La risposta corretta è: '+b.answer;
+  if(isOk)exScore++;
+  nextBtn.style.display='block';
+}
+
+function nextFill() { exIndex++; renderFillExercise(); }
+
+// ═══════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════
+function renderChat() {
+  const banner=document.getElementById('apikey-banner');
+  const status=document.getElementById('api-status');
+  if(apiKey){banner.style.display='none';status.style.background='#4caf50';}
+  else{banner.style.display='block';status.style.background='#555';}
+}
+
+function saveApiKey() {
+  const val=document.getElementById('apikey-input').value.trim();
+  if(!val.startsWith('sk-')){alert('Chiave non valida.');return;}
+  apiKey=val; localStorage.setItem('af_apikey',apiKey); renderChat();
+}
+
+async function sendChat() {
+  if(chatLoading)return;
+  if(!apiKey){alert('Inserisci prima la tua chiave API!');return;}
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim(); if(!text)return;
+  input.value='';
+  appendBubble('user',text);
+  chatHistory.push({role:'user',content:text});
+  chatLoading=true;
+  const loaderId=appendLoader();
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:`Sei un tutor di Afrikaans entusiasta e paziente. L'utente è un principiante assoluto italiano.
+Rispondi SEMPRE in italiano, ma includi esempi in Afrikaans con la pronuncia tra parentesi e la traduzione.
+Aiuta con vocabolario, grammatica, frasi comuni e correzioni gentili.
+Quando l'utente scrive in Afrikaans, correggi gentilmente gli errori.
+Risposte brevi (max 3 paragrafi). Usa emoji 🇿🇦`,
+        messages:chatHistory
+      })
+    });
+    const data=await res.json();
+    const reply=(data.content||[]).map(b=>b.text||'').join('')||'Scusa, riprova!';
+    removeLoader(loaderId); appendBubble('ai',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  } catch(e){removeLoader(loaderId);appendBubble('ai','Errore di connessione 😅 Controlla la chiave API.');}
+  chatLoading=false;
+}
+
+function appendBubble(role,text){
+  const c=document.getElementById('chat-messages');
+  const d=document.createElement('div');
+  d.className=role==='user'?'bubble-user':'bubble-ai';
+  d.textContent=text; c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function appendLoader(){
+  const c=document.getElementById('chat-messages');
+  const d=document.createElement('div'); d.className='bubble-ai';
+  const id='loader-'+Date.now(); d.id=id;
+  d.innerHTML=`<span class="dot" style="animation-delay:0s"></span> <span class="dot" style="animation-delay:.2s"></span> <span class="dot" style="animation-delay:.4s"></span>`;
+  c.appendChild(d); c.scrollTop=c.scrollHeight; return id;
+}
+function removeLoader(id){const e=document.getElementById(id);if(e)e.remove();}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.speechSynthesis.onvoiceschanged=()=>{};
+renderHome();
+</script>
+</body>
+</html>
